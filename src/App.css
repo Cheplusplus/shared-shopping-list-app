@@ -1,9 +1,0 @@
-/**
- * Superseded by the design system in src/styles/tokens.css + global.css.
- *
- * Left intentionally empty (rather than deleted) because the current
- * src/App.tsx still contains the default `create-vite` demo markup and
- * imports this file directly — Agent 4 is not permitted to edit App.tsx.
- * When the integration pass rewrites App.tsx with real routing, this file
- * and its import can be deleted.
- */
