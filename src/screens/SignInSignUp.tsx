@@ -11,6 +11,7 @@ import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate, type Location } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
 import { signIn, signUp } from '../firebase/auth';
+import './auth.css';
 
 type Mode = 'signin' | 'signup';
 

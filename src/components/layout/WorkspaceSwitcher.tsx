@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import './workspace-switcher.css';
 
 export default function WorkspaceSwitcher() {
   const { workspaces, activeWorkspaceId, setActiveWorkspaceId } = useWorkspace();

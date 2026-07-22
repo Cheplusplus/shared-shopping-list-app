@@ -20,6 +20,7 @@ import { FirebaseError } from 'firebase/app';
 import { createWorkspace, redeemInviteCode } from '../firebase/workspaces';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
+import './onboarding.css';
 
 type PendingAction = 'create' | 'join' | null;
 
