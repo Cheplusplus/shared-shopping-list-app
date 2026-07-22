@@ -27,8 +27,17 @@ service cloud.firestore {
     }
 
     match /workspaceMembers/{membershipId} {
+      // `resource.data.uid == request.auth.uid` matches the `where('uid','==', uid)`
+      // filter that `subscribeToUserWorkspaceMemberships` runs (the workspace
+      // switcher's "list my memberships" query) — Firestore needs a rule term
+      // that directly mirrors a query's equality filter to prove a *list*
+      // request safe against its potential result set; `isMember(...)` alone
+      // (an exists() lookup keyed on the per-document, unconstrained
+      // workspaceId field) isn't provable that way and gets the whole query
+      // rejected with permission-denied, even though every actual result
+      // would've passed.
       allow read: if isSignedIn() &&
-        (membershipId == resource.data.workspaceId + '_' + request.auth.uid || isMember(resource.data.workspaceId));
+        (resource.data.uid == request.auth.uid || isMember(resource.data.workspaceId));
       allow create: if isSignedIn() &&
         membershipId == request.resource.data.workspaceId + '_' + request.auth.uid &&
         request.resource.data.uid == request.auth.uid;
