@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// See docs/spec.md ("Security rules approach") for the design rationale.
+// Core rule: a user can read/write a workspace's data only if a
+// workspaceMembers/{workspaceId}_{uid} doc exists for them, checked via
+// exists() so no query (and thus no enumeration) is needed.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isMember(workspaceId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/workspaceMembers/$(workspaceId + '_' + request.auth.uid));
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /workspaces/{workspaceId} {
+      allow read: if isMember(workspaceId);
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isMember(workspaceId) && resource.data.createdBy == request.auth.uid;
+    }
+
+    match /workspaceMembers/{membershipId} {
+      allow read: if isSignedIn() &&
+        (membershipId == resource.data.workspaceId + '_' + request.auth.uid || isMember(resource.data.workspaceId));
+      allow create: if isSignedIn() &&
+        membershipId == request.resource.data.workspaceId + '_' + request.auth.uid &&
+        request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && membershipId == resource.data.workspaceId + '_' + request.auth.uid;
+      allow update: if false;
+    }
+
+    match /workspaces/{workspaceId}/items/{itemId} {
+      allow read: if isMember(workspaceId);
+      allow create: if isMember(workspaceId) && request.resource.data.addedBy == request.auth.uid;
+      allow update, delete: if isMember(workspaceId);
+    }
+
+    match /userItemHistory/{historyId} {
+      allow read, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create, update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+    }
+
+    match /workspaceItemHistory/{historyId} {
+      allow read: if isMember(resource.data.workspaceId);
+      allow create, update: if isMember(request.resource.data.workspaceId);
+    }
+  }
+}
