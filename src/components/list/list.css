@@ -1,0 +1,132 @@
+/*
+ * Minimal, functional styling for the shopping list UI. A separate agent
+ * owns the visual design system (note-paper background, tokens, etc.) and
+ * will layer over this later — this file focuses on correct *behavior*
+ * styling, especially the checked-item treatment described in the spec:
+ * shifted right, ~0.5 opacity, strikethrough, muted color.
+ */
+
+.list-view {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.add-item {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.add-item__form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-item__input {
+  flex: 1;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.add-item__submit {
+  padding: 0.5rem 0.75rem;
+}
+
+.add-item__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0.25rem 0 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.add-item__suggestion {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.add-item__suggestion:hover,
+.add-item__suggestion--active {
+  background: #f0f0f0;
+}
+
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item-row {
+  display: block;
+}
+
+.item-row__button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
+  padding: 0.5rem 0.25rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.item-row__checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  border: 1px solid #888;
+  border-radius: 3px;
+}
+
+.item-row__text {
+  flex: 1;
+}
+
+/* Checked-item visual treatment, per spec: shifted right, ~0.5 opacity,
+   strikethrough, muted color. */
+.item-row--checked .item-row__button {
+  transform: translateX(1.5rem);
+  opacity: 0.5;
+}
+
+.item-row--checked .item-row__text {
+  text-decoration: line-through;
+  color: #555;
+}
+
+.item-list__divider {
+  margin: 0.75rem 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.item-list__empty {
+  color: #777;
+  padding: 0.5rem 0.25rem;
+}
+
+.clear-checked {
+  margin-top: 1rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.clear-checked:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
