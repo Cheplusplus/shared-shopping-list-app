@@ -63,10 +63,39 @@ export interface WorkspaceMember {
 export type WorkspaceMemberForCreate = Omit<WorkspaceMember, 'joinedAt'> & { joinedAt: FieldValue };
 
 /**
+ * `workspaces/{workspaceId}/lists/{listId}` — a named list (board column)
+ * within a workspace. Every workspace has at least one; `ensureDefaultList`
+ * in `src/firebase/lists.ts` creates a `default` one on first load.
+ *
+ * `order` is a fractional index (see `src/lib/ordering.ts`) and is shared by
+ * all members — everyone in a workspace sees the same column order.
+ */
+export interface List {
+  name: string;
+  order: number;
+  createdBy: string;
+  createdAt: Timestamp;
+}
+
+/** Write payload for creating a `workspaces/{workspaceId}/lists/{listId}` doc. */
+export type ListForCreate = Omit<List, 'createdAt'> & { createdAt: FieldValue };
+
+/**
  * `workspaces/{workspaceId}/items/{itemId}` — subcollection, always accessed
- * scoped to one workspace.
+ * scoped to one workspace *and* one list (`listId`).
+ *
+ * Items are deliberately stored flat under the workspace with a `listId`
+ * field rather than nested under `lists/{listId}/items`: moving an item
+ * between lists is then a single-field update that keeps the doc id,
+ * `addedBy`, and history linkage intact.
+ *
+ * `order` is a fractional index within the list (see `src/lib/ordering.ts`).
+ * Rows still sort `checked` first, so `order` only orders items within the
+ * unchecked and checked groups respectively.
  */
 export interface Item {
+  listId: string;
+  order: number;
   text: string;
   normalizedText: string;
   checked: boolean;

@@ -21,8 +21,9 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "archived", "order": "ASCENDING" },
+        { "fieldPath": "listId", "order": "ASCENDING" },
         { "fieldPath": "checked", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "ASCENDING" }
+        { "fieldPath": "order", "order": "ASCENDING" }
       ]
     }
   ],

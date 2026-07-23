@@ -1,17 +1,21 @@
 /**
  * Shows a count of currently-checked items; on click, confirms then archives
- * all checked items via `clearChecked`.
+ * them via `archiveItems`.
+ *
+ * The ids come from the caller's live subscription rather than being
+ * re-queried here, so clearing costs no reads.
  */
 import { useState } from 'react';
-import { clearChecked } from '../../firebase/items';
+import { archiveItems } from '../../firebase/items';
 
 export interface ClearCheckedButtonProps {
   workspaceId: string;
-  checkedCount: number;
+  checkedItemIds: readonly string[];
 }
 
-export function ClearCheckedButton({ workspaceId, checkedCount }: ClearCheckedButtonProps) {
+export function ClearCheckedButton({ workspaceId, checkedItemIds }: ClearCheckedButtonProps) {
   const [clearing, setClearing] = useState(false);
+  const checkedCount = checkedItemIds.length;
 
   async function handleClick() {
     if (checkedCount === 0 || clearing) {
@@ -25,7 +29,7 @@ export function ClearCheckedButton({ workspaceId, checkedCount }: ClearCheckedBu
     }
     setClearing(true);
     try {
-      await clearChecked(workspaceId);
+      await archiveItems(workspaceId, checkedItemIds);
     } finally {
       setClearing(false);
     }

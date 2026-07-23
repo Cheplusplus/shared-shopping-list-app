@@ -62,23 +62,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  background-color: var(--color-paper);
-  background-image:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 27px,
-      var(--color-paper-rule) 28px,
-      transparent 29px
-    ),
-    linear-gradient(
-      to right,
-      transparent 55px,
-      var(--color-paper-margin) 56px,
-      transparent 57px
-    );
-  background-size: 100% 28px, 100% 100%;
-  background-attachment: local, local;
+  /* Flat desk tone behind the whole app. Ruling belongs to the notepad sheets
+     alone — when the backdrop was ruled paper too, the sheets disappeared into
+     it. Keeping this plain and a shade darker makes them read as sheets on a
+     surface. */
+  background-color: var(--color-desk);
 }
 
 h1,
@@ -344,27 +332,38 @@ p {
   gap: var(--space-2);
   font-size: var(--font-size-lg);
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--color-ink);
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .app-header-brand-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: var(--radius-md);
   background: var(--color-accent);
   color: var(--color-accent-contrast);
   font-size: var(--font-size-md);
   font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-4deg);
 }
 
 .app-header-actions {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+@media (max-width: 26rem) {
+  .app-header-brand-name {
+    display: none;
+  }
 }
 
 .app-banner-slot {
@@ -378,6 +377,16 @@ p {
   max-width: var(--content-max-width);
   margin: 0 auto;
   padding: var(--space-5) var(--space-4);
+  min-width: 0;
+}
+
+/* The multi-list board needs the full viewport width to lay its columns out
+   in — capping the main column at 640px would leave it permanently
+   single-column. Matches the board breakpoint in `list.css`. */
+@media (min-width: 60rem) {
+  .app-main {
+    max-width: 100%;
+  }
 }
 
 /* ---------- Install prompt ---------- */

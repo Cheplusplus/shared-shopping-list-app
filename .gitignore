@@ -21,6 +21,9 @@ firebase-debug.log
 firebase-debug.*.log
 functions/lib/
 
+# Chat summaries (local notes, not project docs)
+docs/chat-summaries/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

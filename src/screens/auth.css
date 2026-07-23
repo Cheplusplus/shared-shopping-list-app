@@ -3,12 +3,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-5) var(--space-4);
+  padding: var(--space-6) var(--space-4);
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 22rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.auth-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-size: var(--font-size-xl);
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-4deg);
+}
+
+.auth-tagline {
+  margin: var(--space-2) 0 var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-muted);
+  text-align: center;
 }
 
 .auth-form {
+  position: relative;
   width: 100%;
-  max-width: 22rem;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -16,7 +55,21 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sheet);
+}
+
+/* Washi-tape flourish holding the card to the paper. */
+.auth-form::before {
+  content: '';
+  position: absolute;
+  top: -0.55rem;
+  left: 50%;
+  width: 5.5rem;
+  height: 1.4rem;
+  transform: translateX(-50%) rotate(-2deg);
+  background: var(--color-tape);
+  border-left: 1px dashed rgba(140, 120, 40, 0.3);
+  border-right: 1px dashed rgba(140, 120, 40, 0.3);
 }
 
 .auth-title {

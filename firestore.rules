@@ -45,6 +45,12 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // Named lists (board columns). Same trust model as items: any member of
+    // the workspace can create, rename, reorder, or delete them.
+    match /workspaces/{workspaceId}/lists/{listId} {
+      allow read, write: if isMember(workspaceId);
+    }
+
     match /workspaces/{workspaceId}/items/{itemId} {
       allow read: if isMember(workspaceId);
       allow create: if isMember(workspaceId) && request.resource.data.addedBy == request.auth.uid;

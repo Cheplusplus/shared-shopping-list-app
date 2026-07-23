@@ -7,6 +7,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -19,6 +20,7 @@ import { httpsCallable } from 'firebase/functions';
 import { nanoid } from 'nanoid';
 import { db, functions } from './config';
 import type {
+  Workspace,
   WorkspaceForCreate,
   WorkspaceMember,
   WorkspaceMemberForCreate,
@@ -103,6 +105,18 @@ export function subscribeToUserWorkspaceMemberships(
       snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as WorkspaceMember) })),
     );
   });
+}
+
+/**
+ * Reads a single `workspaces/{workspaceId}` doc — used to re-surface the
+ * invite code/link for a workspace the user is already a member of (the
+ * security rules allow members to `get()` the workspace doc). Returns `null`
+ * if the doc doesn't exist.
+ */
+export async function getWorkspace(workspaceId: string): Promise<WithId<Workspace> | null> {
+  const snapshot = await getDoc(doc(db, 'workspaces', workspaceId));
+  if (!snapshot.exists()) return null;
+  return { id: snapshot.id, ...(snapshot.data() as Workspace) };
 }
 
 /** Updates `users/{uid}.activeWorkspaceId` — call after creating/switching/redeeming. */

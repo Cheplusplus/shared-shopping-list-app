@@ -25,9 +25,9 @@ export function AppShell({ children, headerActions }: AppShellProps) {
       <header className="app-header">
         <span className="app-header-brand">
           <span className="app-header-brand-mark" aria-hidden="true">
-            L
+            ✓
           </span>
-          Listpad
+          <span className="app-header-brand-name">Listpad</span>
         </span>
 
         {headerActions && (

@@ -84,8 +84,17 @@ export default function SignInSignUp() {
 
   return (
     <div className="auth-screen">
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <h1 className="auth-title">{mode === 'signin' ? 'Sign in' : 'Create an account'}</h1>
+      <div className="auth-panel">
+        <div className="auth-brand">
+          <span className="auth-brand-mark" aria-hidden="true">
+            ✓
+          </span>
+          <span className="auth-brand-name">Listpad</span>
+        </div>
+        <p className="auth-tagline">A shared shopping list for your people.</p>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <h1 className="auth-title">{mode === 'signin' ? 'Welcome back' : 'Create an account'}</h1>
 
         {mode === 'signup' && (
           <label className="auth-field">
@@ -133,12 +142,13 @@ export default function SignInSignUp() {
           {submitting ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Sign up'}
         </button>
 
-        <button type="button" className="auth-toggle" onClick={toggleMode}>
-          {mode === 'signin'
-            ? "Don't have an account? Sign up"
-            : 'Already have an account? Sign in'}
-        </button>
-      </form>
+          <button type="button" className="auth-toggle" onClick={toggleMode}>
+            {mode === 'signin'
+              ? "Don't have an account? Sign up"
+              : 'Already have an account? Sign in'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,19 +1,260 @@
 /*
- * Minimal, functional styling for the shopping list UI. A separate agent
- * owns the visual design system (note-paper background, tokens, etc.) and
- * will layer over this later — this file focuses on correct *behavior*
- * styling, especially the checked-item treatment described in the spec:
- * shifted right, ~0.5 opacity, strikethrough, muted color.
+ * Shopping-list UI styled as a real ruled notepad.
+ *
+ * The whole vertical rhythm comes from --rule-height (see tokens.css): the
+ * sheet paints one horizontal rule at the bottom of every --rule-height band,
+ * and each item's text uses that same line-height, so every line of every item
+ * lands exactly on a rule — even when a long item wraps onto a second line.
+ * The pink vertical margin rule sits at --paper-margin, with the checkbox
+ * tucked into the margin to its left, the way a handwritten checklist reads.
  */
 
-.list-view {
-  max-width: 32rem;
-  margin: 0 auto;
+/* ---------- Board ----------
+ *
+ * Below 60rem the board is one full-width notepad and `ListTabs` switches
+ * between lists. At 60rem and up (which clears the largest phone in
+ * landscape, so this really is "a big screen" and not "a phone turned
+ * sideways") every list becomes a fixed-width column and the board scrolls
+ * sideways. Keep the breakpoints in this file in sync with `BOARD_QUERY` in
+ * `screens/ListView.tsx`. */
+
+.list-board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
+
+.list-board__status {
+  text-align: center;
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+
+@media (min-width: 60rem) {
+  .list-board {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-5);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    /* Room for the columns' lifted shadow, which `overflow-x` would clip. */
+    padding-bottom: var(--space-3);
+
+    /* Columns sit centred, so a single list lands in the middle of the
+       screen and each new one pushes the group outwards. `safe` is what
+       makes that survive overflow: plain `center` would push the first
+       column off the left edge into space you can't scroll back to, whereas
+       `safe center` switches to flex-start at exactly the width where the
+       row stops fitting. A browser too old to parse `safe` drops the whole
+       declaration and falls back to flex-start anyway, which is the same
+       left-aligned, scrolling board — so no explicit fallback is needed. */
+    justify-content: safe center;
+  }
+}
+
+/* ---------- Notepad shell ---------- */
+
+.notepad {
+  max-width: 34rem;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-edge);
+  box-shadow: var(--shadow-sheet);
+  overflow: hidden;
+}
+
+@media (min-width: 60rem) {
+  .notepad {
+    flex: 0 0 var(--list-column-width);
+    max-width: var(--list-column-width);
+    margin: 0;
+    scroll-snap-align: start;
+  }
+}
+
+/* Spiral-bound top edge: accent strip with punched holes. */
+.notepad__binding {
+  height: 1.375rem;
+  background-color: var(--color-binding);
+  background-image: radial-gradient(
+    circle at center,
+    var(--color-paper) 0 0.26rem,
+    transparent 0.3rem
+  );
+  background-size: 1.9rem 100%;
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* On the board the binding doubles as the column's drag handle. */
+.notepad__binding--handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.notepad__binding--handle:active {
+  cursor: grabbing;
+}
+
+.notepad__binding--handle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* The column left behind while its copy rides the pointer. */
+.notepad--dragging {
+  opacity: 0.4;
+}
+
+/* The copy inside the DragOverlay: lifted off the desk and tilted. */
+.notepad--overlay {
+  cursor: grabbing;
+  transform: rotate(-1.5deg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ---------- Head strip: title + add box ---------- */
+
+.notepad__head {
+  padding: var(--space-4) var(--space-4) var(--space-4)
+    calc(var(--paper-margin) - var(--space-2));
+  background: color-mix(in srgb, var(--color-surface-muted) 70%, var(--color-paper));
+  border-bottom: 1px solid var(--color-paper-edge);
+}
+
+.notepad__title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.notepad__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.notepad__count {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.notepad__count--none {
+  color: var(--color-ink-faint);
+  font-weight: 500;
+}
+
+/* ---------- List title: inline rename + options menu ---------- */
+
+.notepad__rename {
+  flex: 1;
+  min-width: 0;
+}
+
+.notepad__rename-input {
+  width: 100%;
+  font: inherit;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  padding: 0 var(--space-1);
+  margin: -1px 0 -1px calc(var(--space-1) * -1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+}
+
+.notepad__rename-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.notepad__menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.notepad__menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  line-height: 1;
+  color: var(--color-ink-muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.notepad__menu-trigger:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+}
+
+.notepad__menu-trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.notepad__menu-list {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 20;
+  min-width: 10rem;
+  padding: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.notepad__menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.notepad__menu-item:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.notepad__menu-item--danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.notepad__menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------- Add-item box ---------- */
 
 .add-item {
   position: relative;
-  margin-bottom: var(--space-4);
 }
 
 .add-item__form {
@@ -23,6 +264,7 @@
 
 .add-item__input {
   flex: 1;
+  min-width: 0;
   font: inherit;
   font-size: var(--font-size-md);
   color: var(--color-ink);
@@ -30,6 +272,11 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.add-item__input::placeholder {
+  color: var(--color-ink-faint);
 }
 
 .add-item__input:focus-visible,
@@ -40,14 +287,20 @@
 }
 
 .add-item__submit {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-md);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-accent-contrast);
   background: var(--color-accent);
   border: 1px solid var(--color-accent);
   border-radius: var(--radius-md);
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .add-item__submit:hover:not(:disabled) {
@@ -55,8 +308,12 @@
   border-color: var(--color-accent-hover);
 }
 
+.add-item__submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .add-item__submit:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -67,25 +324,60 @@
   right: 0;
   z-index: 10;
   margin: var(--space-1) 0 0;
-  padding: var(--space-1) 0;
+  padding: var(--space-1);
   list-style: none;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   max-height: 16rem;
   overflow-y: auto;
 }
 
 .add-item__suggestion {
   padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--color-ink);
 }
 
+.add-item__suggestion::before {
+  content: '↩ ';
+  color: var(--color-ink-faint);
+}
+
 .add-item__suggestion:hover,
 .add-item__suggestion--active {
-  background: var(--color-surface-muted);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+/* ---------- The ruled sheet ---------- */
+
+.notepad__sheet {
+  position: relative;
+  min-height: calc(var(--rule-height) * 5);
+  /* Blue horizontal rule at the bottom of each band + pink margin rule. */
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--rule-height) - 1px),
+      var(--color-paper-rule) calc(var(--rule-height) - 1px),
+      var(--color-paper-rule) var(--rule-height)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(var(--paper-margin) - 2px),
+      var(--color-paper-margin) calc(var(--paper-margin) - 2px),
+      var(--color-paper-margin) var(--paper-margin),
+      transparent var(--paper-margin)
+    );
+}
+
+/* Wash the sheet while an item hovers over this column. */
+.notepad__sheet--drop-target {
+  box-shadow: inset 0 0 0 2px var(--color-accent);
 }
 
 .item-list {
@@ -95,13 +387,13 @@
 }
 
 .item-row {
+  position: relative;
   display: block;
 }
 
 .item-row__button {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  position: relative;
+  display: block;
   width: 100%;
   text-align: left;
   background: none;
@@ -109,65 +401,358 @@
   font: inherit;
   font-size: var(--font-size-md);
   color: var(--color-ink);
-  padding: var(--space-2) var(--space-1);
+  /* text starts just past the margin rule; each wrapped line is one band,
+     and the right padding keeps text clear of the drag grip */
+  padding: 0 var(--space-7) 0 calc(var(--paper-margin) + var(--space-3));
   cursor: pointer;
-  transition: transform var(--transition-base), opacity var(--transition-base);
+  transition: padding-left var(--transition-base), opacity var(--transition-base);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.item-row__checkbox {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  flex-shrink: 0;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
+.item-row__button:focus-visible {
+  outline: none;
+  background: var(--color-accent-soft);
 }
 
 .item-row__text {
-  flex: 1;
+  display: block;
+  line-height: var(--rule-height);
+  overflow-wrap: anywhere;
 }
 
-/* Checked-item visual treatment, per spec: shifted right, ~0.5 opacity,
-   strikethrough, muted color. */
+/* Checkbox tucked into the left margin, centered on the first ruled band. */
+.item-row__checkbox {
+  position: absolute;
+  left: 0.85rem;
+  top: calc(var(--rule-height) / 2);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--color-accent-contrast);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.item-row__button:hover .item-row__checkbox {
+  border-color: var(--color-accent);
+}
+
+.item-row--checked .item-row__checkbox {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Checked treatment, per spec: shifted right, greyed, struck through. */
 .item-row--checked .item-row__button {
-  transform: translateX(1.5rem);
-  opacity: 0.5;
+  padding-left: calc(var(--paper-margin) + var(--space-5));
+  opacity: 0.6;
 }
 
 .item-row--checked .item-row__text {
   text-decoration: line-through;
+  text-decoration-color: var(--color-ink-faint);
   color: var(--color-ink-muted);
 }
 
-.item-list__divider {
-  margin: var(--space-3) 0;
+/* ---------- Drag affordances on a row ----------
+ *
+ * A row drags from anywhere (pointer listeners sit on the <li>), so the grip
+ * is really a *keyboard* affordance and a visual hint — hence it only
+ * surfaces on hover/focus, keeping the ruled sheet clean at rest. */
+
+.item-row__grip {
+  position: absolute;
+  right: var(--space-2);
+  top: calc(var(--rule-height) / 2);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  line-height: 1;
+  color: var(--color-ink-faint);
+  background: none;
   border: none;
-  border-top: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  opacity: 0;
+  touch-action: none;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
 }
+
+.item-row:hover .item-row__grip,
+.item-row:focus-within .item-row__grip {
+  opacity: 1;
+}
+
+.item-row__grip:hover {
+  color: var(--color-ink-muted);
+}
+
+.item-row__grip:active {
+  cursor: grabbing;
+}
+
+.item-row__grip:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+/* Touch devices have no hover, so keep the grip faintly visible there. */
+@media (hover: none) {
+  .item-row__grip {
+    opacity: 0.5;
+  }
+}
+
+/* The row left behind while its copy rides the pointer. */
+.item-row--dragging .item-row__button {
+  opacity: 0.35;
+}
+
+/* The copy inside the DragOverlay: a strip of paper lifted off the sheet. */
+.item-list--overlay {
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-edge);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  cursor: grabbing;
+  transform: rotate(-1deg);
+}
+
+.item-row--overlay .item-row__button {
+  cursor: grabbing;
+}
+
+/* ---------- Empty / loading states (aligned to the first band) ---------- */
 
 .item-list__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--rule-height) * 2);
+  margin: 0;
+  padding: 0 var(--space-4) 0 calc(var(--paper-margin) + var(--space-3));
   color: var(--color-ink-muted);
-  padding: var(--space-2) var(--space-1);
+  font-style: italic;
+}
+
+/* ---------- Foot: summary + clear checked ---------- */
+
+.notepad__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--color-surface-muted) 70%, var(--color-paper));
+  border-top: 1px solid var(--color-paper-edge);
+}
+
+.notepad__summary {
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-muted);
 }
 
 .clear-checked {
-  margin-top: var(--space-4);
-  padding: var(--space-2) var(--space-3);
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--color-ink);
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .clear-checked:hover:not(:disabled) {
-  background: var(--color-surface-muted);
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .clear-checked:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* ---------- The bar above the board ----------
+ *
+ * Holds the list tabs (narrow screens only) and the "+ New list" button. The
+ * tabs scroll sideways when there are many lists; the button sits outside
+ * that scroll so it's always reachable. */
+
+.list-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- List tabs (narrow screens only) ----------
+ *
+ * The board is off below 60rem, so these are how you get between lists —
+ * and, being drop targets, how you move an item into one. */
+
+.list-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-bottom: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+@media (min-width: 60rem) {
+  .list-tabs {
+    display: none;
+  }
+}
+
+.list-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.list-tab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.list-tab--active {
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* An item is hovering over this tab — dropping moves it into that list. */
+.list-tab--drop-target {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  border-style: dashed;
+}
+
+.list-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.list-tab--active .list-tab__count {
+  background: color-mix(in srgb, var(--color-accent-contrast) 24%, transparent);
+  color: var(--color-accent-contrast);
+}
+
+/* ---------- "+ New list" button ---------- */
+
+.new-list-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.new-list-button:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.new-list-button:focus-within,
+.new-list-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* The "+" itself, as a filled disc so the button reads as an add control
+   even at a glance. */
+.new-list-button__plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: 1;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.new-list-button:hover .new-list-button__plus {
+  background: var(--color-accent-contrast);
+  color: var(--color-accent);
+}
+
+.new-list-button--open {
+  padding: var(--space-1) var(--space-3);
+  cursor: text;
+}
+
+.new-list-button--open:hover {
+  background: var(--color-surface);
+}
+
+.new-list-button__input {
+  width: 9rem;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+  background: none;
+  border: none;
+}
+
+.new-list-button__input:focus-visible {
+  outline: none;
 }

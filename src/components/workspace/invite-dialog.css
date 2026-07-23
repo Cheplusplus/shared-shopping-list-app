@@ -1,0 +1,200 @@
+/* Invite modal, styled like a taped-up index card over a dimmed desk. */
+
+.invite-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(28, 25, 20, 0.45);
+  backdrop-filter: blur(2px);
+  animation: invite-overlay-in var(--transition-base) ease;
+}
+
+.invite-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 25rem;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: invite-dialog-in var(--transition-base) ease;
+}
+
+/* Washi-tape flourish across the top edge. */
+.invite-dialog__tape {
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  width: 6rem;
+  height: 1.5rem;
+  transform: translateX(-50%) rotate(-2.5deg);
+  background: var(--color-tape);
+  border-left: 1px dashed rgba(140, 120, 40, 0.35);
+  border-right: 1px dashed rgba(140, 120, 40, 0.35);
+}
+
+.invite-dialog__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.invite-dialog__close:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+}
+
+.invite-dialog__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xl);
+}
+
+.invite-dialog__subtitle {
+  margin: 0 0 var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-muted);
+}
+
+.invite-dialog__field-label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-muted);
+}
+
+.invite-dialog__row {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.invite-dialog__input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-ink);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.invite-dialog__input:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.invite-dialog__copy,
+.invite-dialog__share {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.invite-dialog__copy:hover,
+.invite-dialog__share:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.invite-dialog__share {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.invite-dialog__code-block {
+  margin-bottom: var(--space-2);
+}
+
+.invite-dialog__code {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.invite-dialog__code:hover {
+  border-color: var(--color-accent);
+}
+
+.invite-dialog__code-value {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--color-ink);
+}
+
+.invite-dialog__code-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+}
+
+.invite-dialog__muted {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--font-size-sm);
+}
+
+.invite-dialog__error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+@keyframes invite-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes invite-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .invite-overlay,
+  .invite-dialog {
+    animation: none;
+  }
+}

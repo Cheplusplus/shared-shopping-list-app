@@ -13,11 +13,24 @@ import { useSuggestions } from '../../hooks/useSuggestions';
 
 export interface AddItemInputProps {
   workspaceId: string;
+  listId: string;
   uid: string;
   displayName: string;
+  /**
+   * The `order` to give the new item — the owning column already has its
+   * items subscribed, so it knows where the end of the list is and `addItem`
+   * doesn't have to spend a read finding out.
+   */
+  nextOrder: number;
 }
 
-export function AddItemInput({ workspaceId, uid, displayName }: AddItemInputProps) {
+export function AddItemInput({
+  workspaceId,
+  listId,
+  uid,
+  displayName,
+  nextOrder,
+}: AddItemInputProps) {
   const [text, setText] = useState('');
   const [activeIndex, setActiveIndex] = useState(-1);
   const [submitting, setSubmitting] = useState(false);
@@ -32,7 +45,7 @@ export function AddItemInput({ workspaceId, uid, displayName }: AddItemInputProp
     }
     setSubmitting(true);
     try {
-      await addItem(workspaceId, uid, displayName, trimmed);
+      await addItem(workspaceId, listId, uid, displayName, trimmed, nextOrder);
       setText('');
       setActiveIndex(-1);
     } finally {

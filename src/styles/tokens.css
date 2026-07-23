@@ -11,8 +11,9 @@
 
   /* ---- Note-paper palette ---- */
   --color-paper: #fdfdf7;
+  --color-desk: #e8e4d8; /* flat backdrop the paper sheets sit on */
   --color-paper-rule: #cfe0f0; /* ruled horizontal lines */
-  --color-paper-margin: #f2b8c6; /* vertical margin rule */
+  --color-paper-margin: #e79bb0; /* vertical margin rule */
 
   /* ---- Ink / text ---- */
   --color-ink: #2e2b26; /* primary text, reads like pen ink on paper */
@@ -75,6 +76,9 @@
   --shadow-sm: 0 1px 2px rgba(46, 43, 38, 0.08);
   --shadow-md: 0 4px 12px rgba(46, 43, 38, 0.1);
   --shadow-lg: 0 10px 30px rgba(46, 43, 38, 0.14);
+  /* Layered shadow that reads as a real sheet of paper lifted off the desk. */
+  --shadow-sheet:
+    0 1px 1px rgba(46, 43, 38, 0.05), 0 10px 24px -8px rgba(46, 43, 38, 0.22);
 
   /* ---- Motion ---- */
   --transition-fast: 120ms ease;
@@ -83,6 +87,23 @@
   /* ---- Layout ---- */
   --header-height: 3.5rem;
   --content-max-width: 640px;
+  /* One list column on the multi-list board (see list.css). Narrow enough
+     that three fit on a laptop, wide enough for a real item to not wrap. */
+  --list-column-width: 22rem;
+
+  /* ---- Notepad geometry ----
+   * The ruled sheet's whole rhythm derives from --rule-height: rows are
+   * exactly one rule tall and the horizontal rules are painted at each row's
+   * baseline, so item text always lands on a line. --paper-margin is where
+   * the pink vertical margin rule sits (checkboxes live to its left). */
+  --rule-height: 2.75rem; /* 44px — comfortable touch target + writing line */
+  --paper-margin: 3.25rem; /* 52px from the sheet's left edge */
+
+  /* ---- Paper accents ---- */
+  --color-paper-edge: #e7e3d0; /* the sheet's own hairline border */
+  --color-binding: #3b6ea5; /* notepad top binding strip (matches accent) */
+  --color-binding-ink: #eaf1f8; /* text/holes on the binding strip */
+  --color-tape: rgba(233, 213, 122, 0.55); /* washi-tape flourish */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -90,8 +111,9 @@
     color-scheme: dark;
 
     --color-paper: #1c1d1a;
+    --color-desk: #111210;
     --color-paper-rule: #2c3b47;
-    --color-paper-margin: #4a2e35;
+    --color-paper-margin: #6f4750;
 
     --color-ink: #ede9df;
     --color-ink-muted: #9a958a;
@@ -112,6 +134,13 @@
     --color-surface-muted: #2a2b24;
     --color-border: #3a3a32;
     --color-border-strong: #4a4a3f;
+
+    --color-paper-edge: #33342c;
+    --color-binding: #2c3b47;
+    --color-binding-ink: #cfdae4;
+    --color-tape: rgba(233, 213, 122, 0.2);
+    --shadow-sheet:
+      0 1px 1px rgba(0, 0, 0, 0.3), 0 12px 28px -8px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -120,8 +149,9 @@
   color-scheme: dark;
 
   --color-paper: #1c1d1a;
+  --color-desk: #111210;
   --color-paper-rule: #2c3b47;
-  --color-paper-margin: #4a2e35;
+  --color-paper-margin: #6f4750;
 
   --color-ink: #ede9df;
   --color-ink-muted: #9a958a;
@@ -142,14 +172,22 @@
   --color-surface-muted: #2a2b24;
   --color-border: #3a3a32;
   --color-border-strong: #4a4a3f;
+
+  --color-paper-edge: #33342c;
+  --color-binding: #2c3b47;
+  --color-binding-ink: #cfdae4;
+  --color-tape: rgba(233, 213, 122, 0.2);
+  --shadow-sheet:
+    0 1px 1px rgba(0, 0, 0, 0.3), 0 12px 28px -8px rgba(0, 0, 0, 0.55);
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
 
   --color-paper: #fdfdf7;
+  --color-desk: #e8e4d8;
   --color-paper-rule: #cfe0f0;
-  --color-paper-margin: #f2b8c6;
+  --color-paper-margin: #e79bb0;
 
   --color-ink: #2e2b26;
   --color-ink-muted: #8b8577;
@@ -170,4 +208,11 @@
   --color-surface-muted: #f6f4ec;
   --color-border: #e3ddc9;
   --color-border-strong: #cfc8b0;
+
+  --color-paper-edge: #e7e3d0;
+  --color-binding: #3b6ea5;
+  --color-binding-ink: #eaf1f8;
+  --color-tape: rgba(233, 213, 122, 0.55);
+  --shadow-sheet:
+    0 1px 1px rgba(46, 43, 38, 0.05), 0 10px 24px -8px rgba(46, 43, 38, 0.22);
 }
