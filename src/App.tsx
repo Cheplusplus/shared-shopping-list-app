@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import { AppRoutes } from './routing/AppRoutes';
 import { AppShell } from './components/layout/AppShell';
 import WorkspaceSwitcher from './components/layout/WorkspaceSwitcher';
+import { ThemeToggle } from './components/layout/ThemeToggle';
+import { SettingsMenu } from './components/layout/SettingsMenu';
 import { InviteDialog } from './components/workspace/InviteDialog';
 import { ListView } from './screens/ListView';
 import { signOutUser } from './firebase/auth';
@@ -39,6 +42,8 @@ function AuthenticatedApp() {
       headerActions={
         <>
           <WorkspaceSwitcher />
+          <ThemeToggle />
+          <SettingsMenu />
           <button
             type="button"
             className="btn btn-secondary btn-sm"
@@ -74,7 +79,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <WorkspaceProvider>
-          <AppRoutes appContent={<AuthenticatedApp />} />
+          <SettingsProvider>
+            <AppRoutes appContent={<AuthenticatedApp />} />
+          </SettingsProvider>
         </WorkspaceProvider>
       </AuthProvider>
     </BrowserRouter>

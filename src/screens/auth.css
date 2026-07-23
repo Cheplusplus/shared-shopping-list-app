@@ -25,15 +25,10 @@
 }
 
 .auth-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 2.4rem;
   height: 2.4rem;
   border-radius: var(--radius-md);
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-size: var(--font-size-xl);
   box-shadow: var(--shadow-sm);
   transform: rotate(-4deg);
 }

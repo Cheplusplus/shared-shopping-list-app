@@ -402,8 +402,8 @@
   font-size: var(--font-size-md);
   color: var(--color-ink);
   /* text starts just past the margin rule; each wrapped line is one band,
-     and the right padding keeps text clear of the drag grip */
-  padding: 0 var(--space-7) 0 calc(var(--paper-margin) + var(--space-3));
+     and the right padding keeps text clear of the camera button and grip */
+  padding: 0 var(--space-8) 0 calc(var(--paper-margin) + var(--space-3));
   cursor: pointer;
   transition: padding-left var(--transition-base), opacity var(--transition-base);
   -webkit-tap-highlight-color: transparent;
@@ -537,6 +537,254 @@
   cursor: grabbing;
 }
 
+/* ---------- Item photos ----------
+ *
+ * A photo hangs below its item's text, indented to the same column, like
+ * something clipped to the page. Its total box is exactly two ruled bands
+ * (margins included), so the rows beneath it keep landing on the lines —
+ * which is why the height is expressed against --rule-height rather than
+ * picked as a round number. */
+
+/* The picker is triggered from the camera button and from the viewer's
+   "Replace", so the input itself is never seen. */
+.item-photo__input {
+  display: none;
+}
+
+.item-photo__thumb-button {
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item-photo__thumb {
+  display: block;
+  /* Two bands minus the margins below, so the pair comes to exactly two. */
+  height: calc(var(--rule-height) * 2 - var(--space-4));
+  width: auto;
+  max-width: min(12rem, 60%);
+  margin: var(--space-2) 0 var(--space-2) calc(var(--paper-margin) + var(--space-3));
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  /* A white mount and a hairline read as a print laid on the paper, which
+     also keeps a pale photo from dissolving into the sheet. */
+  border: 3px solid var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.item-photo__thumb-button:hover .item-photo__thumb {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.item-photo__thumb-button:focus-visible {
+  outline: none;
+}
+
+.item-photo__thumb-button:focus-visible .item-photo__thumb {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Checked items shift right; their photo goes with them. */
+.item-row--checked .item-photo__thumb {
+  margin-left: calc(var(--paper-margin) + var(--space-5));
+  opacity: 0.6;
+}
+
+/* The attach control, shown only while the row has no photo — once there is
+   one, the thumbnail is the way in (replace/remove live in the viewer).
+   Sits beside the grip and surfaces on hover/focus for the same reason. */
+.item-photo__attach {
+  position: absolute;
+  right: calc(var(--space-2) + 1.75rem);
+  top: calc(var(--rule-height) / 2);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+  filter: grayscale(1);
+  transition: opacity var(--transition-fast), filter var(--transition-fast);
+}
+
+.item-row:hover .item-photo__attach,
+.item-row:focus-within .item-photo__attach {
+  opacity: 0.85;
+}
+
+.item-photo__attach:hover {
+  opacity: 1;
+  filter: none;
+}
+
+.item-photo__attach:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.item-photo__attach:disabled {
+  opacity: 0.85;
+  cursor: progress;
+}
+
+@media (hover: none) {
+  .item-photo__attach {
+    opacity: 0.5;
+  }
+}
+
+/* Floats over the sheet rather than pushing the rows around — a failed
+   upload shouldn't reflow the list you're reading. Clears itself after a few
+   seconds (see ERROR_TIMEOUT_MS). */
+.item-photo__error {
+  position: absolute;
+  right: var(--space-2);
+  top: calc(var(--rule-height) - var(--space-2));
+  z-index: 15;
+  max-width: 15rem;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- Photo viewer ----------
+ *
+ * Portalled to <body> (see `ItemPhoto`), so it is positioned against the
+ * screen and never against a column mid-drag. */
+
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(20, 18, 15, 0.72);
+}
+
+.photo-viewer__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: min(44rem, 100%);
+  max-height: 100%;
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-edge);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.photo-viewer__image {
+  display: block;
+  /* `min-height: 0` lets a tall image shrink inside the flex column instead
+     of pushing the action bar off the bottom of the screen. */
+  min-height: 0;
+  max-width: 100%;
+  object-fit: contain;
+  background: var(--color-surface-muted);
+}
+
+.photo-viewer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--color-surface-muted) 70%, var(--color-paper));
+  border-top: 1px solid var(--color-paper-edge);
+}
+
+.photo-viewer__caption {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.photo-viewer__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.photo-viewer__action {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.photo-viewer__action:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.photo-viewer__action--danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.photo-viewer__action:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.photo-viewer__close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.photo-viewer__close:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
 /* ---------- Empty / loading states (aligned to the first band) ---------- */
 
 .item-list__empty {
@@ -565,6 +813,11 @@
 .notepad__summary {
   font-size: var(--font-size-sm);
   color: var(--color-ink-muted);
+}
+
+.notepad__summary--done {
+  color: var(--color-success);
+  font-weight: 600;
 }
 
 .clear-checked {

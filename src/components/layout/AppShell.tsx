@@ -24,9 +24,14 @@ export function AppShell({ children, headerActions }: AppShellProps) {
 
       <header className="app-header">
         <span className="app-header-brand">
-          <span className="app-header-brand-mark" aria-hidden="true">
-            ✓
-          </span>
+          <img
+            className="app-header-brand-mark"
+            src="/favicon.svg"
+            alt=""
+            aria-hidden="true"
+            width={30}
+            height={30}
+          />
           <span className="app-header-brand-name">Listpad</span>
         </span>
 

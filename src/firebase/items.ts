@@ -30,7 +30,7 @@ import { db } from './config';
 import { commitInChunks } from './batch';
 import { normalizeText, upsertItemHistory } from './history';
 import { sequentialOrders } from '../lib/ordering';
-import type { Item, ItemForCreate, WithId } from '../types/models';
+import type { Item, ItemForCreate, ItemImage, WithId } from '../types/models';
 
 /**
  * Adds an item to a list and upserts both history docs for the adding user.
@@ -65,6 +65,7 @@ export async function addItem(
     createdAt: serverTimestamp(),
     checkedAt: null,
     archivedAt: null,
+    image: null,
   };
 
   const itemRef = await addDoc(collection(db, 'workspaces', workspaceId, 'items'), itemDoc);
@@ -84,6 +85,22 @@ export function toggleChecked(
     checked,
     checkedAt: checked ? serverTimestamp() : null,
   });
+}
+
+/**
+ * Points an item at a stored photo, or clears it (`null`).
+ *
+ * Only the Firestore side — uploading and deleting the object itself is
+ * `images.ts`'s job, and the caller sequences the two. The order matters:
+ * point at the new object *before* deleting the old one, so a failure
+ * between the two leaves an orphan rather than a broken image.
+ */
+export function setItemImage(
+  workspaceId: string,
+  itemId: string,
+  image: ItemImage | null,
+): Promise<void> {
+  return updateDoc(doc(db, 'workspaces', workspaceId, 'items', itemId), { image });
 }
 
 /**

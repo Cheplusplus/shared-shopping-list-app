@@ -1,0 +1,114 @@
+/* Settings dropdown: the same paper-card surface as the workspace switcher
+   menu, with rows that read like a preferences sheet. */
+
+.settings-menu {
+  position: relative;
+}
+
+.settings-menu__panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 30;
+  width: 17rem;
+  max-width: calc(100vw - var(--space-4) * 2);
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.settings-menu__heading {
+  margin: 0;
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-muted);
+}
+
+.settings-menu__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.settings-menu__row:hover {
+  background: var(--color-surface-muted);
+}
+
+/* The real control: kept in the layout (not display:none) so it stays
+   focusable and reachable, but painted by the switch beside it. */
+.settings-menu__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-menu__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 1.2rem;
+  margin-top: 0.1rem;
+  background: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  transition: background-color var(--transition-fast);
+}
+
+.settings-menu__switch::after {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  background: var(--color-surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.settings-menu__input:checked + .settings-menu__switch {
+  background: var(--color-accent);
+}
+
+.settings-menu__input:checked + .settings-menu__switch::after {
+  transform: translateX(0.9rem);
+}
+
+.settings-menu__input:focus-visible + .settings-menu__switch {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.settings-menu__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.settings-menu__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-ink);
+}
+
+.settings-menu__hint {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
+  color: var(--color-ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-menu__switch,
+  .settings-menu__switch::after {
+    transition: none;
+  }
+}

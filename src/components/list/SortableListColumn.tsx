@@ -84,7 +84,13 @@ export function SortableListColumn({
           handle: reorderable ? { setActivatorNodeRef, attributes, listeners } : undefined,
         }}
         renderItem={(item) => (
-          <SortableItemRow key={item.id} item={item} listId={list.id} onToggle={onToggleItem} />
+          <SortableItemRow
+            key={item.id}
+            item={item}
+            workspaceId={workspaceId}
+            listId={list.id}
+            onToggle={onToggleItem}
+          />
         )}
       />
     </SortableContext>

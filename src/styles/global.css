@@ -339,16 +339,10 @@ p {
 }
 
 .app-header-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 1.9rem;
   height: 1.9rem;
   border-radius: var(--radius-md);
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-size: var(--font-size-md);
-  font-weight: 700;
   box-shadow: var(--shadow-sm);
   transform: rotate(-4deg);
 }

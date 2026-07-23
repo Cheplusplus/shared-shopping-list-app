@@ -12,7 +12,12 @@
  * (see `drag-types.ts`). Pointer listeners sit on the `<li>` so a drag can
  * start anywhere on the row, while the grip is the *keyboard* activator —
  * that keeps Enter/Space on the toggle button meaning "toggle".
+ *
+ * `workspaceId` is threaded through purely for `ItemPhoto`, which does its own
+ * writes (as `ListColumn` does for `AddItemInput`); leaving it off gives a
+ * read-only row, which is what the drag overlay wants.
  */
+import { ItemPhoto } from './ItemPhoto';
 import { keyboardActivator } from './drag-types';
 import type { Item, WithId } from '../../types/models';
 import type { ItemDrag } from './drag-types';
@@ -20,12 +25,14 @@ import type { ItemDrag } from './drag-types';
 export interface ItemRowProps {
   item: WithId<Item>;
   onToggle: (item: WithId<Item>) => void;
+  /** Omit to render the row's photo without its attach/replace controls. */
+  workspaceId?: string;
   drag?: ItemDrag;
   /** Renders the lifted copy shown inside a `DragOverlay`. */
   overlay?: boolean;
 }
 
-export function ItemRow({ item, onToggle, drag, overlay = false }: ItemRowProps) {
+export function ItemRow({ item, onToggle, workspaceId, drag, overlay = false }: ItemRowProps) {
   const classNames = ['item-row'];
   if (item.checked) classNames.push('item-row--checked');
   if (drag?.isDragging) classNames.push('item-row--dragging');
@@ -65,6 +72,8 @@ export function ItemRow({ item, onToggle, drag, overlay = false }: ItemRowProps)
           <span aria-hidden="true">⠿</span>
         </button>
       )}
+
+      <ItemPhoto item={item} workspaceId={workspaceId} />
     </li>
   );
 }

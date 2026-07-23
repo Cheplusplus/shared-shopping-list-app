@@ -11,10 +11,15 @@
  *
  * A list with no entry in the returned map hasn't had its first snapshot
  * yet — which is how a column tells "still loading" from "genuinely empty".
+ *
+ * This hook is also where the board's one true item order is decided, so
+ * that the columns' rendering and the drop math in `ListView` can never
+ * disagree about it — see `sortItems`.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { subscribeToActiveItems } from '../firebase/items';
 import { usePendingPatches } from './usePendingPatches';
+import { useSettings } from '../contexts/SettingsContext';
 import type { Item, WithId } from '../types/models';
 
 export type ItemsByList = Record<string, WithId<Item>[]>;
@@ -41,6 +46,7 @@ export function useBoardItems(
 ): UseBoardItemsResult {
   const [itemsByList, setItemsByList] = useState<ItemsByList>({});
   const { patches, apply } = usePendingPatches<ItemPlacement>();
+  const { settings } = useSettings();
 
   // List ids are Firestore document ids, so they never contain '|'. Joining
   // them gives the effect a stable primitive dependency — `listIds` itself is
@@ -70,21 +76,30 @@ export function useBoardItems(
     return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
   }, [workspaceId, listKey]);
 
-  const patched = useMemo(() => applyPlacements(itemsByList, patches), [itemsByList, patches]);
+  const patched = useMemo(
+    () => applyPlacements(itemsByList, patches, settings.sinkChecked),
+    [itemsByList, patches, settings.sinkChecked],
+  );
 
   return { itemsByList: patched, placeItem: apply };
 }
 
 /**
  * Re-buckets and re-sorts the subscribed items with any pending placements
- * merged in, matching the order `subscribeToActiveItems` queries in:
- * unchecked before checked, then by `order`.
+ * merged in.
+ *
+ * `subscribeToActiveItems` already queries unchecked-then-checked, then by
+ * `order` — so with the "move checked items to the bottom" setting on and
+ * nothing pending there is nothing to do and the subscribed arrays pass
+ * straight through. Everything else re-sorts here: with the setting off,
+ * `order` alone decides, so a ticked item keeps its place.
  */
 function applyPlacements(
   itemsByList: ItemsByList,
   placements: Record<string, ItemPlacement>,
+  sinkChecked: boolean,
 ): ItemsByList {
-  if (Object.keys(placements).length === 0) return itemsByList;
+  if (Object.keys(placements).length === 0 && sinkChecked) return itemsByList;
 
   // Seed from the subscribed keys so "no entry yet" still means "loading".
   const result: ItemsByList = Object.fromEntries(
@@ -100,8 +115,16 @@ function applyPlacements(
   }
 
   for (const items of Object.values(result)) {
-    items.sort((a, b) => Number(a.checked) - Number(b.checked) || a.order - b.order);
+    items.sort(sinkChecked ? byCheckedThenOrder : byOrder);
   }
 
   return result;
+}
+
+function byCheckedThenOrder(a: WithId<Item>, b: WithId<Item>): number {
+  return Number(a.checked) - Number(b.checked) || a.order - b.order;
+}
+
+function byOrder(a: WithId<Item>, b: WithId<Item>): number {
+  return a.order - b.order;
 }

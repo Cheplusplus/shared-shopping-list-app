@@ -86,9 +86,14 @@ export default function SignInSignUp() {
     <div className="auth-screen">
       <div className="auth-panel">
         <div className="auth-brand">
-          <span className="auth-brand-mark" aria-hidden="true">
-            ✓
-          </span>
+          <img
+            className="auth-brand-mark"
+            src="/favicon.svg"
+            alt=""
+            aria-hidden="true"
+            width={38}
+            height={38}
+          />
           <span className="auth-brand-name">Listpad</span>
         </div>
         <p className="auth-tagline">A shared shopping list for your people.</p>

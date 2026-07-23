@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Cloud Storage rules for item photos.
+//
+// Objects live at workspaces/{workspaceId}/items/{itemId}/{fileName} — see
+// `src/firebase/images.ts`.
+//
+// IMPORTANT — how this differs from firestore.rules: Storage rules cannot
+// read Firestore, so the `exists(workspaceMembers/...)` membership check that
+// guards every Firestore path is simply not available here. Membership is
+// instead enforced one step earlier, where it *can* be: an item's `image.url`
+// only ever reaches a client through the item doc, and reading that doc
+// requires membership. A non-member can't discover the path (workspace and
+// item ids are unguessable Firestore auto-ids) or the download token baked
+// into the URL.
+//
+// The practical residue is that a signed-in user who somehow obtained a path
+// could read or overwrite that one object. If that ever matters — a workspace
+// with genuinely sensitive photos — the fix is to move uploads behind a Cloud
+// Function that can check membership, or mirror membership into custom auth
+// claims that these rules can read.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /workspaces/{workspaceId}/items/{itemId}/{fileName} {
+      allow read: if request.auth != null;
+
+      // The client compresses to ~160 KB before uploading (src/lib/image.ts);
+      // 1 MB leaves headroom for a photo that compresses badly while still
+      // ruling out anyone using the bucket as free file storage.
+      allow write: if request.auth != null
+        && request.resource.size < 1 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|webp|png)');
+
+      allow delete: if request.auth != null;
+    }
+
+    // No other path is granted anything, and Storage rules deny by default —
+    // so the rest of the bucket is unreachable from a client. (An explicit
+    // `allow read, write: if false` here would be decoration only: matching
+    // rules are OR'd together, so a `false` rule can't take away what another
+    // match granted.)
+  }
+}

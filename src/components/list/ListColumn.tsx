@@ -4,9 +4,11 @@
  * (summary + "Clear checked"). On a wide screen several of these sit side by
  * side as board columns; on a phone one shows at a time.
  *
- * Unchecked items render first, then checked ones (each with the spec's
- * shifted-right/greyed/struck-through treatment) — all flowing down the same
- * ruled lines, so no divider is needed.
+ * With the "move checked items to the bottom" setting on (the default),
+ * unchecked items render first and checked ones after; with it off they stay
+ * in their own order. Either way checked rows keep the spec's
+ * shifted-right/greyed/struck-through treatment and everything flows down the
+ * same ruled lines, so no divider is needed.
  *
  * Presentational. The `drag` prop carries dnd-kit's wiring in from
  * `SortableListColumn` and is omitted when this renders inside a
@@ -17,6 +19,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AddItemInput } from './AddItemInput';
 import { ClearCheckedButton } from './ClearCheckedButton';
 import { ORDER_STEP } from '../../lib/ordering';
+import { useSettings } from '../../contexts/SettingsContext';
 import type { Item, List, WithId } from '../../types/models';
 import type { ColumnDrag } from './drag-types';
 
@@ -54,6 +57,7 @@ export function ListColumn({
   const [renaming, setRenaming] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { settings } = useSettings();
 
   // Dismiss the options menu the way a menu is expected to dismiss: a click
   // anywhere else, or Escape.
@@ -78,6 +82,10 @@ export function ListColumn({
   const uncheckedItems = items.filter((item) => !item.checked);
   const checkedItems = items.filter((item) => item.checked);
   const hasItems = items.length > 0;
+
+  // `items` already arrives in the board's chosen order (see `useBoardItems`);
+  // the sink is re-applied here so a column renders right whatever it's handed.
+  const orderedItems = settings.sinkChecked ? [...uncheckedItems, ...checkedItems] : items;
 
   // Append new items after everything already in the list.
   const nextOrder = items.reduce((max, item) => Math.max(max, item.order), 0) + ORDER_STEP;
@@ -119,7 +127,7 @@ export function ListColumn({
               }
             >
               {uncheckedItems.length > 0
-                ? `${uncheckedItems.length} to buy`
+                ? `${uncheckedItems.length} remaining`
                 : hasItems
                   ? 'All done 🎉'
                   : 'Empty'}
@@ -199,16 +207,23 @@ export function ListColumn({
         ) : !hasItems ? (
           <p className="item-list__empty">Nothing here yet — jot something down above ✍️</p>
         ) : (
-          <ul className="item-list">
-            {uncheckedItems.map(renderItem)}
-            {checkedItems.map(renderItem)}
-          </ul>
+          <ul className="item-list">{orderedItems.map(renderItem)}</ul>
         )}
       </div>
 
       {checkedItems.length > 0 && (
         <div className="notepad__foot">
-          <span className="notepad__summary">{checkedItems.length} in the basket</span>
+          <span
+            className={
+              uncheckedItems.length === 0
+                ? 'notepad__summary notepad__summary--done'
+                : 'notepad__summary'
+            }
+          >
+            {uncheckedItems.length === 0
+              ? 'Done!'
+              : `${checkedItems.length} down ${uncheckedItems.length} to go`}
+          </span>
           <ClearCheckedButton
             workspaceId={workspaceId}
             checkedItemIds={checkedItems.map((item) => item.id)}

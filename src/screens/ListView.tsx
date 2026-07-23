@@ -46,6 +46,7 @@ import {
   renameList,
   setListOrder,
 } from '../firebase/lists';
+import { useSettings } from '../contexts/SettingsContext';
 import { useLists } from '../hooks/useLists';
 import { useBoardItems } from '../hooks/useBoardItems';
 import { useActiveList } from '../hooks/useActiveList';
@@ -70,6 +71,7 @@ export interface ListViewProps {
 }
 
 export function ListView({ workspaceId, uid, displayName }: ListViewProps) {
+  const { settings } = useSettings();
   const { lists, loading: listsLoading, placeList } = useLists(workspaceId, uid);
   const listIds = useMemo(() => lists.map((list) => list.id), [lists]);
   const { itemsByList, placeItem } = useBoardItems(workspaceId, listIds);
@@ -258,11 +260,17 @@ export function ListView({ workspaceId, uid, displayName }: ListViewProps) {
 
     if (sameList && insertIndex === originalIndex) return;
 
-    // Checked rows always sink below unchecked ones regardless of `order`, so
-    // an item's neighbours are the nearest siblings in its own half. Dropping
-    // into the other half lands it at that half's edge.
-    const previous = nearestOrder(siblings, insertIndex - 1, -1, item.checked);
-    const next = nearestOrder(siblings, insertIndex, 1, item.checked);
+    // With checked rows sunk to the bottom they render below the unchecked
+    // ones regardless of `order`, so an item's neighbours are the nearest
+    // siblings in its own half — dropping into the other half lands it at that
+    // half's edge. With the setting off, `order` *is* the rendered order and
+    // the immediate neighbours are the real ones.
+    const previous = settings.sinkChecked
+      ? nearestOrder(siblings, insertIndex - 1, -1, item.checked)
+      : siblings[insertIndex - 1]?.order;
+    const next = settings.sinkChecked
+      ? nearestOrder(siblings, insertIndex, 1, item.checked)
+      : siblings[insertIndex]?.order;
     const order = orderBetween(previous, next);
 
     placeItem(itemId, { listId: targetListId, order }, async () => {
@@ -271,10 +279,17 @@ export function ListView({ workspaceId, uid, displayName }: ListViewProps) {
       if (needsNormalize(order, previous, next)) {
         const reordered = [...siblings];
         reordered.splice(insertIndex, 0, { ...item, listId: targetListId, order });
-        await normalizeItemOrders(workspaceId, [
-          ...reordered.filter((candidate) => !candidate.checked),
-          ...reordered.filter((candidate) => candidate.checked),
-        ]);
+        // Normalizing rewrites `order` down the rendered sequence, so it has
+        // to be handed the list as it appears on screen.
+        await normalizeItemOrders(
+          workspaceId,
+          settings.sinkChecked
+            ? [
+                ...reordered.filter((candidate) => !candidate.checked),
+                ...reordered.filter((candidate) => candidate.checked),
+              ]
+            : reordered,
+        );
       }
     });
   }
@@ -367,10 +382,11 @@ function isPast(active: Active, over: Over, axis: 'vertical' | 'horizontal'): bo
 
 /**
  * Walks out from `start` in `step`'s direction for the first item on the
- * same side of the checked divide, and returns its `order`.
+ * same side of the checked divide, and returns its `order`. Only used while
+ * checked items sink to the bottom — see `dropItem`.
  *
- * The list renders unchecked rows before checked ones whatever their `order`
- * is, so an item dropped in among the checked ones can't take a checked
+ * The list then renders unchecked rows before checked ones whatever their
+ * `order` is, so an item dropped in among the checked ones can't take a checked
  * row's order as a neighbour — it would render nowhere near where it landed.
  * Skipping to the nearest same-state sibling puts it at the edge of its own
  * half instead, which is the closest position that actually exists.

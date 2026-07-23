@@ -81,6 +81,25 @@ export interface List {
 export type ListForCreate = Omit<List, 'createdAt'> & { createdAt: FieldValue };
 
 /**
+ * A photo attached to an item, stored in Cloud Storage and pointed at from
+ * the item doc.
+ *
+ * `url` is a download URL carrying its own access token, so an `<img>` can
+ * render it without the Storage SDK. `path` is kept alongside it because a
+ * download URL can't be turned back into an object reference — and deleting
+ * the old object when a photo is replaced or removed needs one.
+ *
+ * `width`/`height` are the *compressed* dimensions (see `src/lib/image.ts`),
+ * recorded so the viewer can size itself before the image arrives.
+ */
+export interface ItemImage {
+  url: string;
+  path: string;
+  width: number;
+  height: number;
+}
+
+/**
  * `workspaces/{workspaceId}/items/{itemId}` — subcollection, always accessed
  * scoped to one workspace *and* one list (`listId`).
  *
@@ -105,13 +124,20 @@ export interface Item {
   createdAt: Timestamp;
   archived: boolean;
   archivedAt: Timestamp | null;
+  /**
+   * Optional rather than `| null` alone: items added before photos existed
+   * have no such field at all, so reads must cope with `undefined` even
+   * though every write since sets it explicitly.
+   */
+  image?: ItemImage | null;
 }
 
 /** Write payload for creating a new (unchecked, unarchived) item. */
-export type ItemForCreate = Omit<Item, 'checkedAt' | 'createdAt' | 'archivedAt'> & {
+export type ItemForCreate = Omit<Item, 'checkedAt' | 'createdAt' | 'archivedAt' | 'image'> & {
   createdAt: FieldValue;
   checkedAt: null;
   archivedAt: null;
+  image: null;
 };
 
 /**

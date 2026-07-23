@@ -13,11 +13,12 @@ import type { Item, WithId } from '../../types/models';
 
 export interface SortableItemRowProps {
   item: WithId<Item>;
+  workspaceId: string;
   listId: string;
   onToggle: (item: WithId<Item>) => void;
 }
 
-export function SortableItemRow({ item, listId, onToggle }: SortableItemRowProps) {
+export function SortableItemRow({ item, workspaceId, listId, onToggle }: SortableItemRowProps) {
   const {
     setNodeRef,
     setActivatorNodeRef,
@@ -31,6 +32,7 @@ export function SortableItemRow({ item, listId, onToggle }: SortableItemRowProps
   return (
     <ItemRow
       item={item}
+      workspaceId={workspaceId}
       onToggle={onToggle}
       drag={{
         setNodeRef,
