@@ -108,6 +108,43 @@ Notes:
   that the device can't receive, and sending still works for anyone who
   *can*.
 
+## 8c. App Check (required for photo uploads)
+
+Cloud Storage on this project has **App Check enforcement turned on**, so every
+upload must carry a valid App Check token. Without it, `uploadBytes` fails with
+a misleading `storage/unauthenticated` error *even when the user is fully signed
+in* (Firestore is unaffected — it's not enforced). The client wiring is already
+in `src/firebase/config.ts`; the console side and env vars are the manual part.
+
+1. **Register the web app with reCAPTCHA v3.** Console: **Build -> App Check ->
+   Apps -> your web app -> reCAPTCHA v3**. This creates a reCAPTCHA v3 key pair.
+2. **Put the public site key in `.env`:**
+   ```
+   VITE_FIREBASE_RECAPTCHA_SITE_KEY=6Lc…   # the site key, not the secret
+   ```
+   It's public and ships in client code. `.env` is read at **build time** — a
+   prod build (or CI) made without this var bakes in an undefined key and every
+   upload fails, so make sure it's set wherever `npm run build` runs.
+3. **Enforce App Check for Storage.** Console: **App Check -> APIs -> Cloud
+   Storage -> Enforce**. (Leave Firestore unenforced unless you also test it.)
+4. **Add your serving domains to the reCAPTCHA key's allowlist** (Google
+   reCAPTCHA admin, or the key's config): `your-project.web.app`,
+   `your-project.firebaseapp.com`, and any custom domain. Missing domains make
+   the token request fail in prod even with the key baked in.
+
+**Local dev** can't solve a real reCAPTCHA on `localhost`, so it uses an App
+Check *debug token* instead (wired behind `import.meta.env.DEV` in `config.ts`):
+
+- Set a fixed one in `.env` so it's stable across machines/browsers:
+  ```
+  VITE_APPCHECK_DEBUG_TOKEN=<a-uuid>
+  ```
+  Leave it blank and the SDK prints a fresh random token to the console on first
+  load (`App Check debug token: …`) — but a new browser/incognito/cleared-storage
+  mints a *different* one each time, which is a common source of confusion.
+- Register that exact token: **App Check -> Apps -> your web app -> ⋮ -> Manage
+  debug tokens -> Add**. A mismatch shows up as a **403 on `exchangeDebugToken`**.
+
 ## 9. Install functions dependencies (if not already done)
 
 ```sh

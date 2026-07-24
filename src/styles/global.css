@@ -26,15 +26,22 @@ body,
   height: 100%;
 }
 
-/* Hard guarantee that the app never scrolls sideways on a phone: the page
-   itself is pinned to the viewport width. `clip` (not `hidden`) is deliberate
-   — it does not turn the root into a scroll container, so the sticky header
-   and the desktop board's own `overflow-x: auto` (see list.css) keep working.
+/* Hard guarantee that the app never scrolls sideways on a phone: the page is
+   pinned to the viewport width. This lives on `html` (the root scroll
+   container) on purpose:
+     - `overflow-x: hidden` on the root is reliably propagated to the viewport
+       as a scroll stop in every browser. `clip` is NOT — on older iOS Safari
+       and Android WebViews `clip` is either unsupported or isn't treated as a
+       hard scroll block, so a stray wide element still forces a side-scroll.
+     - Because it sits on the root (not on an ancestor between the sticky header
+       and the viewport), the sticky header still sticks, and the desktop
+       board's own `overflow-x: auto` (see list.css) is an inner scroll
+       container that is unaffected.
+   Only the x axis is constrained, so vertical page scrolling is untouched.
    Anything that would overflow the width is a layout bug to fix at the source;
    this is the backstop so a stray wide element can never force a side-scroll. */
-html,
-body {
-  overflow-x: clip;
+html {
+  overflow-x: hidden;
   max-width: 100%;
 }
 
