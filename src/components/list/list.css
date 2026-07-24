@@ -55,6 +55,12 @@
 /* ---------- Notepad shell ---------- */
 
 .notepad {
+  /* `width: 100%` is load-bearing: `.list-board` is a flex container, and a
+     flex item with auto side margins does NOT stretch to fill — it shrinks to
+     its content's width instead. Without this the sheet sizes to its widest
+     line and pushes past a narrow phone's edge (the head/add-box especially).
+     Pinning it to the column width makes the content wrap inside instead. */
+  width: 100%;
   max-width: 34rem;
   margin: 0 auto;
   border-radius: var(--radius-lg);
