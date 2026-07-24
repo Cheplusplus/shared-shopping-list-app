@@ -7,7 +7,7 @@
  * (see `SETUP.md`) before running the app.
  */
 import { initializeApp } from 'firebase/app';
-import { getToken, initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
@@ -47,21 +47,10 @@ if (import.meta.env.DEV) {
     import.meta.env.VITE_APPCHECK_DEBUG_TOKEN || true;
 }
 
-const appCheck = initializeAppCheck(app, {
+initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider(import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY),
   isTokenAutoRefreshEnabled: true,
 });
-
-// TEMP DIAGNOSTIC — remove once App Check uploads work.
-if (import.meta.env.DEV) {
-  const key = import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY;
-  console.log('[appcheck-debug] siteKey loaded:', typeof key === 'string' && key.length > 0,
-    'len:', key ? key.length : 0,
-    '| debugTokenFlag:', (globalThis as { FIREBASE_APPCHECK_DEBUG_TOKEN?: unknown }).FIREBASE_APPCHECK_DEBUG_TOKEN);
-  getToken(appCheck, /* forceRefresh */ true)
-    .then((t) => console.log('[appcheck-debug] getToken OK, token length:', t.token.length))
-    .catch((e) => console.log('[appcheck-debug] getToken FAILED:', (e as { code?: string }).code, (e as Error).message));
-}
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
