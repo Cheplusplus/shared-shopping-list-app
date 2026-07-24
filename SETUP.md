@@ -82,6 +82,32 @@ Then fill in `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`,
 `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID` from that
 config object. `.env` is gitignored — never commit it.
 
+## 8b. (Optional) Enable push "pings"
+
+The 🔔 ping button lets a member push-notify the whole workspace or one
+person ("come look at the list"). It needs a Web Push key:
+
+Console: **Project settings -> Cloud Messaging**. If the API is disabled,
+enable "Cloud Messaging API (V1)". Under **Web configuration -> Web Push
+certificates**, click **Generate key pair**, then copy the key into
+`.env`:
+
+```
+VITE_FIREBASE_VAPID_KEY=B! …the long key pair value…
+```
+
+Notes:
+- No extra console step is needed on the sending side — `sendPing` ships as
+  part of the functions deploy in step 10.
+- Push requires HTTPS, which Firebase Hosting already provides; on
+  `localhost` it also works for dev, but **not** over a plain-HTTP LAN IP.
+- **iOS/iPadOS**: web push only reaches Listpad once it's been added to the
+  Home Screen (Safari -> Share -> Add to Home Screen), iOS 16.4+. The ping
+  dialog tells users this rather than failing silently.
+- Leave the key blank to ship without push — the ping dialog then reports
+  that the device can't receive, and sending still works for anyone who
+  *can*.
+
 ## 9. Install functions dependencies (if not already done)
 
 ```sh

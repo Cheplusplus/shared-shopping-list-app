@@ -12,7 +12,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 
-const firebaseConfig = {
+/**
+ * The public Firebase web config. Exported so the messaging layer can forward
+ * it to the FCM service worker (which can't read Vite env vars) as query
+ * params — see `src/firebase/messaging.ts`. These values are not secret; access
+ * control lives in the security rules, not here.
+ */
+export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -21,7 +27,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);

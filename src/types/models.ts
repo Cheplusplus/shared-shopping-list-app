@@ -21,6 +21,15 @@ export interface User {
   email: string;
   createdAt: Timestamp;
   activeWorkspaceId: string | null;
+  /**
+   * Firebase Cloud Messaging registration tokens — one per device/browser the
+   * user has enabled push "pings" on. Stored here (not on `workspaceMembers`)
+   * because a token is per-device, not per-workspace: a user in several
+   * workspaces would otherwise duplicate it. The `sendPing` Cloud Function
+   * reads these (admin-side) to deliver a ping and prunes any token FCM
+   * reports as no-longer-registered. Absent for users who never enabled push.
+   */
+  fcmTokens?: string[];
 }
 
 /** Write payload for creating a `users/{uid}` doc. */

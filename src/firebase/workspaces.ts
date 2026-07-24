@@ -8,6 +8,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
@@ -105,6 +106,36 @@ export function subscribeToUserWorkspaceMemberships(
       snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as WorkspaceMember) })),
     );
   });
+}
+
+/**
+ * Lists every member of a workspace (`workspaceMembers where workspaceId == X`)
+ * — used by the "ping" picker to let you choose one person to nudge.
+ *
+ * Unlike `subscribeToUserWorkspaceMemberships` (a live query the switcher needs
+ * to react to joins/leaves), this is a one-shot `getDocs` fetched when the ping
+ * dialog opens: the roster rarely changes mid-ping and doesn't warrant a
+ * standing listener.
+ *
+ * This query is allowed by the `isMember(resource.data.workspaceId)` branch of
+ * the `workspaceMembers` read rule: because the query pins `workspaceId` to a
+ * constant, Firestore can prove every match satisfies the rule. (Contrast the
+ * `where uid == uid` switcher query, which needed its own `resource.data.uid ==
+ * uid` rule branch precisely because it left `workspaceId` unconstrained — see
+ * `docs/chat-summaries/2026-07-23-initial-build-spec-and-rules-fix.md`.)
+ */
+export async function getWorkspaceMembers(
+  workspaceId: string,
+): Promise<WithId<WorkspaceMember>[]> {
+  const membersQuery = query(
+    collection(db, 'workspaceMembers'),
+    where('workspaceId', '==', workspaceId),
+  );
+  const snapshot = await getDocs(membersQuery);
+  return snapshot.docs.map((docSnap) => ({
+    id: docSnap.id,
+    ...(docSnap.data() as WorkspaceMember),
+  }));
 }
 
 /**

@@ -26,6 +26,18 @@ body,
   height: 100%;
 }
 
+/* Hard guarantee that the app never scrolls sideways on a phone: the page
+   itself is pinned to the viewport width. `clip` (not `hidden`) is deliberate
+   — it does not turn the root into a scroll container, so the sticky header
+   and the desktop board's own `overflow-x: auto` (see list.css) keep working.
+   Anything that would overflow the width is a layout bug to fix at the source;
+   this is the backstop so a stray wide element can never force a side-scroll. */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
 }

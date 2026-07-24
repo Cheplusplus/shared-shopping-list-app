@@ -1,0 +1,226 @@
+/* Ping modal — same dimmed-desk / paper-card language as the invite dialog. */
+
+.ping-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(28, 25, 20, 0.45);
+  backdrop-filter: blur(2px);
+  animation: ping-overlay-in var(--transition-base) ease;
+}
+
+.ping-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 25rem;
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: ping-dialog-in var(--transition-base) ease;
+}
+
+.ping-dialog__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ping-dialog__close:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+}
+
+.ping-dialog__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xl);
+}
+
+.ping-dialog__subtitle {
+  margin: 0 0 var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-muted);
+}
+
+.ping-dialog__field-label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-muted);
+}
+
+.ping-dialog__optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--color-ink-faint);
+}
+
+.ping-dialog__targets {
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: none;
+}
+
+.ping-dialog__target {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.ping-dialog__target:hover {
+  background: var(--color-surface-muted);
+}
+
+.ping-dialog__target input {
+  accent-color: var(--color-accent);
+}
+
+.ping-dialog__input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  color: var(--color-ink);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.ping-dialog__input:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.ping-dialog__send {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.ping-dialog__send:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.ping-dialog__send:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ping-dialog__muted {
+  margin: 0 0 var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--font-size-sm);
+}
+
+.ping-dialog__error {
+  margin: 0 0 var(--space-3);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.ping-dialog__result {
+  margin: 0 0 var(--space-3);
+  color: var(--color-ink);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.ping-dialog__push {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+.ping-dialog__push-enable {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.ping-dialog__push-enable:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.ping-dialog__push-enable:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ping-dialog__push-hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-faint);
+}
+
+.ping-dialog__push-ok {
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--color-border-strong);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-muted);
+}
+
+@keyframes ping-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ping-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ping-overlay,
+  .ping-dialog {
+    animation: none;
+  }
+}
