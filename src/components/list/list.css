@@ -323,6 +323,45 @@
   cursor: not-allowed;
 }
 
+/* Square icon button beside "Add": opens the camera/gallery to add a photo as
+   its own item. Sized off the input so it lines up with the field, not the
+   larger accent button. */
+.add-item__camera {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  min-width: 2.75rem;
+  font-size: var(--font-size-md);
+  line-height: 1;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.add-item__camera:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+.add-item__camera:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.add-item__camera:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Triggered from the camera button and the source sheet, never seen itself. */
+.add-item__photo-input {
+  display: none;
+}
+
 .add-item__suggestions {
   position: absolute;
   top: 100%;
@@ -468,6 +507,27 @@
   text-decoration: line-through;
   text-decoration-color: var(--color-ink-faint);
   color: var(--color-ink-muted);
+}
+
+/* A photo-only row hides its placeholder label on screen (kept for screen
+   readers). The label normally gives the button its height, so reserve one
+   ruled band explicitly — that keeps the checkbox on the line and leaves a
+   full-width strip to tap for checking the item off, with the photo below. */
+.item-row__text--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.item-row--photo .item-row__button {
+  min-height: var(--rule-height);
 }
 
 /* ---------- Drag affordances on a row ----------
@@ -789,6 +849,194 @@
 .photo-viewer__close:hover {
   background: var(--color-danger-soft);
   color: var(--color-danger);
+}
+
+/* ---------- Photo source sheet (Take photo / Choose from library) ---------- */
+
+/* Sits above the photo viewer (z-index 100) so "Replace" can open it while the
+   viewer is up. */
+.photo-source {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-3);
+  /* Clear the phone's home indicator / gesture bar. */
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  background: rgba(20, 18, 15, 0.72);
+}
+
+.photo-source__sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--space-3);
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-edge);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.photo-source__title {
+  margin: 0 0 var(--space-1);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.photo-source__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.photo-source__option:hover {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.photo-source__icon {
+  font-size: 1.4em;
+  line-height: 1;
+}
+
+.photo-source__cancel {
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.photo-source__cancel:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+}
+
+/* ---------- Photo caption dialog (name-or-not for an added photo) ---------- */
+
+.photo-caption {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(20, 18, 15, 0.72);
+}
+
+.photo-caption__frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 24rem;
+  padding: var(--space-4);
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-edge);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.photo-caption__preview {
+  display: block;
+  width: 100%;
+  max-height: 40vh;
+  object-fit: contain;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-md);
+}
+
+.photo-caption__input {
+  font: inherit;
+  font-size: var(--font-size-md);
+  color: var(--color-ink);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.photo-caption__input::placeholder {
+  color: var(--color-ink-faint);
+}
+
+.photo-caption__input:focus-visible,
+.photo-caption__input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.photo-caption__error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+.photo-caption__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.photo-caption__cancel,
+.photo-caption__submit {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.photo-caption__cancel {
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+}
+
+.photo-caption__cancel:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
+}
+
+.photo-caption__submit {
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+}
+
+.photo-caption__submit:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.photo-caption__cancel:disabled,
+.photo-caption__submit:disabled {
+  opacity: 0.5;
+  cursor: progress;
 }
 
 /* ---------- Empty / loading states (aligned to the first band) ---------- */

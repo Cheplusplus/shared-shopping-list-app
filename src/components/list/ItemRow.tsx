@@ -33,10 +33,17 @@ export interface ItemRowProps {
 }
 
 export function ItemRow({ item, onToggle, workspaceId, drag, overlay = false }: ItemRowProps) {
+  // A photo-only item (added by picture, left unnamed) keeps its placeholder
+  // text for screen readers but hides it on screen, letting the thumbnail be
+  // the row. Only once the image has landed — before that the label still shows
+  // so the row isn't a mystery blank line mid-upload.
+  const photoOnly = Boolean(item.photoItem && item.image);
+
   const classNames = ['item-row'];
   if (item.checked) classNames.push('item-row--checked');
   if (drag?.isDragging) classNames.push('item-row--dragging');
   if (overlay) classNames.push('item-row--overlay');
+  if (photoOnly) classNames.push('item-row--photo');
 
   return (
     <li
@@ -54,7 +61,9 @@ export function ItemRow({ item, onToggle, workspaceId, drag, overlay = false }: 
         <span className="item-row__checkbox" aria-hidden="true">
           {item.checked ? '✓' : ''}
         </span>
-        <span className="item-row__text">{item.text}</span>
+        <span className={photoOnly ? 'item-row__text item-row__text--hidden' : 'item-row__text'}>
+          {item.text}
+        </span>
       </button>
 
       {drag && (

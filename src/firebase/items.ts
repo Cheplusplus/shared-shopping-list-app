@@ -18,6 +18,7 @@ import {
   collection,
   doc,
   addDoc,
+  deleteDoc,
   onSnapshot,
   orderBy,
   query,
@@ -73,6 +74,62 @@ export async function addItem(
   await upsertItemHistory({ uid, workspaceId, text: trimmedText });
 
   return itemRef.id;
+}
+
+/**
+ * The placeholder label given to an *un-named* photo item (see `addPhotoItem`).
+ * An item always needs *some* text for search and screen readers; when the user
+ * chooses not to name the photo, this stands in and the UI hides it on screen.
+ * A user who *does* type a name gets an ordinary item (via `addItem`) instead.
+ */
+export const PHOTO_ITEM_TEXT = 'Photo';
+
+/**
+ * Creates an un-named photo item — one added by taking/picking a picture with
+ * no caption — and returns its id. The caller then uploads the image and calls
+ * `setItemImage`, exactly as an existing row's photo control does.
+ *
+ * Unlike `addItem` it does *not* bump item history ("Photo" is a placeholder,
+ * not a name worth suggesting back) and it marks the doc `photoItem: true` so
+ * the row hides the placeholder and lets the picture stand alone. If the image
+ * upload fails the caller rolls the item back with `deleteItem`, so an empty
+ * "Photo" row is never left behind.
+ */
+export async function addPhotoItem(
+  workspaceId: string,
+  listId: string,
+  uid: string,
+  displayName: string,
+  order: number,
+): Promise<string> {
+  const itemDoc: ItemForCreate = {
+    listId,
+    order,
+    text: PHOTO_ITEM_TEXT,
+    normalizedText: normalizeText(PHOTO_ITEM_TEXT),
+    checked: false,
+    addedBy: uid,
+    addedByName: displayName,
+    archived: false,
+    createdAt: serverTimestamp(),
+    checkedAt: null,
+    archivedAt: null,
+    image: null,
+    photoItem: true,
+  };
+
+  const itemRef = await addDoc(collection(db, 'workspaces', workspaceId, 'items'), itemDoc);
+  return itemRef.id;
+}
+
+/**
+ * Hard-deletes an item. The rest of the app archives rather than deletes; this
+ * is only for rolling back an `addPhotoItem` whose image upload failed — that
+ * item never became real, so it's removed outright instead of lingering in the
+ * archive.
+ */
+export function deleteItem(workspaceId: string, itemId: string): Promise<void> {
+  return deleteDoc(doc(db, 'workspaces', workspaceId, 'items', itemId));
 }
 
 /** Toggles an item's `checked` state, stamping/clearing `checkedAt`. */

@@ -17,11 +17,13 @@
  * column is dragged — which would turn the overlay's `position: fixed` into
  * something positioned against the column instead of the screen.
  */
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { deleteItemImage, uploadItemImage } from '../../firebase/images';
 import { setItemImage } from '../../firebase/items';
 import { compressImage } from '../../lib/image';
+import { isCoarsePointer } from '../../lib/pointer';
+import { PhotoSourceSheet, type PhotoSource } from './PhotoSourceSheet';
 import type { Item, ItemImage as ItemImageModel, WithId } from '../../types/models';
 
 /** How long a failure message hangs around before clearing itself. */
@@ -34,10 +36,12 @@ export interface ItemPhotoProps {
 }
 
 export function ItemPhoto({ item, workspaceId }: ItemPhotoProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const libraryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewing, setViewing] = useState(false);
+  const [choosing, setChoosing] = useState(false);
 
   const image = item.image ?? null;
 
@@ -88,21 +92,47 @@ export function ItemPhoto({ item, workspaceId }: ItemPhotoProps) {
     }
   }
 
+  // On a phone, let the user pick the camera or the gallery; on a desktop the
+  // camera hint is meaningless, so just open the file dialog.
+  function openPicker() {
+    if (isCoarsePointer()) setChoosing(true);
+    else libraryInputRef.current?.click();
+  }
+
+  function pickSource(source: PhotoSource) {
+    // Click the input while still inside the sheet button's user gesture —
+    // browsers only open a file dialog from one — then dismiss the sheet.
+    (source === 'camera' ? cameraInputRef : libraryInputRef).current?.click();
+    setChoosing(false);
+  }
+
+  function onPicked(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Cleared before handling, so picking the *same* file again after a
+    // failure still fires `change`.
+    event.target.value = '';
+    if (file) void attach(file);
+  }
+
   return (
     <>
       <input
-        ref={inputRef}
+        ref={libraryInputRef}
         type="file"
         accept="image/*"
         className="item-photo__input"
         tabIndex={-1}
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          // Cleared before handling, so picking the *same* file again after a
-          // failure still fires `change`.
-          event.target.value = '';
-          if (file) void attach(file);
-        }}
+        onChange={onPicked}
+      />
+      {/* Same picker, but `capture` asks a phone to open the camera. */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="item-photo__input"
+        tabIndex={-1}
+        onChange={onPicked}
       />
 
       {image ? (
@@ -119,7 +149,7 @@ export function ItemPhoto({ item, workspaceId }: ItemPhotoProps) {
         <button
           type="button"
           className="item-photo__attach"
-          onClick={() => inputRef.current?.click()}
+          onClick={openPicker}
           onPointerDown={stopDrag}
           disabled={busy}
           aria-label={busy ? 'Attaching photo…' : `Attach a photo to ${item.text}`}
@@ -142,12 +172,20 @@ export function ItemPhoto({ item, workspaceId }: ItemPhotoProps) {
             image={image}
             text={item.text}
             busy={busy}
-            onReplace={() => inputRef.current?.click()}
+            onReplace={openPicker}
             onRemove={() => void remove()}
             onClose={() => setViewing(false)}
           />,
           document.body,
         )}
+
+      {choosing && (
+        <PhotoSourceSheet
+          title={image ? 'Replace photo' : 'Add a photo'}
+          onPick={pickSource}
+          onClose={() => setChoosing(false)}
+        />
+      )}
     </>
   );
 }

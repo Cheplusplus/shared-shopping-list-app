@@ -139,6 +139,13 @@ export interface Item {
    * though every write since sets it explicitly.
    */
   image?: ItemImage | null;
+  /**
+   * Set on items added *by* a photo (see `addPhotoItem`) rather than by text.
+   * Their `text` is a generic placeholder that stands in only for search and
+   * screen readers, so the UI hides it and lets the picture be the row. Absent
+   * (undefined) on ordinary typed items.
+   */
+  photoItem?: boolean;
 }
 
 /** Write payload for creating a new (unchecked, unarchived) item. */
