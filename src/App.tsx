@@ -6,9 +6,7 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import { PushProvider, usePush } from './contexts/PushContext';
 import { AppRoutes } from './routing/AppRoutes';
 import { AppShell } from './components/layout/AppShell';
-import WorkspaceSwitcher from './components/layout/WorkspaceSwitcher';
-import { ThemeToggle } from './components/layout/ThemeToggle';
-import { SettingsMenu } from './components/layout/SettingsMenu';
+import { HeaderActions } from './components/layout/HeaderActions';
 import { InviteDialog } from './components/workspace/InviteDialog';
 import { PingDialog } from './components/ping/PingDialog';
 import { ListView } from './screens/ListView';
@@ -51,30 +49,11 @@ function AuthenticatedApp() {
   return (
     <AppShell
       headerActions={
-        <>
-          <WorkspaceSwitcher />
-          <ThemeToggle />
-          <SettingsMenu />
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => setPingOpen(true)}
-            title="Ping the list"
-          >
-            <span aria-hidden="true">🔔</span>
-            <span className="visually-hidden">Ping</span>
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setInviteOpen(true)}
-          >
-            <span aria-hidden="true">＋</span> Invite
-          </button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => void handleSignOut()}>
-            Sign out
-          </button>
-        </>
+        <HeaderActions
+          onOpenPing={() => setPingOpen(true)}
+          onOpenInvite={() => setInviteOpen(true)}
+          onSignOut={() => void handleSignOut()}
+        />
       }
     >
       <ListView
